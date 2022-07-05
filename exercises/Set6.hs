@@ -13,7 +13,10 @@ data Country = Finland | Switzerland | Norway
   deriving Show
 
 instance Eq Country where
-  (==) = todo
+  Finland == Finland = True
+  Switzerland == Switzerland = True
+  Norway == Norway = True
+  _ == _ = False
 
 ------------------------------------------------------------------------------
 -- Ex 2: implement an Ord instance for Country so that
@@ -22,10 +25,17 @@ instance Eq Country where
 -- Remember minimal complete definitions!
 
 instance Ord Country where
-  compare = todo -- implement me?
-  (<=) = todo -- and me?
-  min = todo -- and me?
-  max = todo -- and me?
+  compare x y | x == y    = EQ
+              | x <= y    = LT
+              | otherwise = GT
+
+  (<=) Finland Norway = True
+  (<=) Finland Switzerland = True
+  (<=) Norway Switzerland = True
+  (<=) x y = x == y
+
+  min x y | x<y = x |otherwise = y
+  max x y | x>y = x |otherwise = y
 
 ------------------------------------------------------------------------------
 -- Ex 3: Implement an Eq instance for the type Name which contains a String.
