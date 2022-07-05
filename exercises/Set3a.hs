@@ -116,12 +116,23 @@ capitalize string = unwords (map firstLetterToUpper (words string))
 --   * the function takeWhile
 
 powers :: Int -> Int -> [Int]
-powers k max = todo --takeWhile (k^max > max)
-    --where power k = k^2
+powers k max = 1 : f k max k
+
+f :: Int -> Int -> Int -> [Int]
+f k max c =
+    if c>max then []
+    else c : f k max (c*k)
+
+--powers :: Int -> Int -> [Int]
+--powers k max = takeWhile (<= max) $ iterate (k *) 1
+
+--powers k max = takeWhile (getPowerList ([]::[Int]) k max > max)
+    --where getPowerList list k max = if max > k^(length list) then getPowerList (list ++ k^(length list)) k max else list
 
 
-iterate2 f 0 x = [x]
-iterate2 f n x = x : iterate2 f (n-1) (f x)
+--iterate2 f 0 x = [x]
+--iterate2 f n x = x : iterate2 f (n-1) (f x)
+
 ------------------------------------------------------------------------------
 -- Ex 7: implement a functional while loop. While should be a function
 -- that takes a checking function, an updating function, and an
@@ -143,7 +154,7 @@ iterate2 f n x = x : iterate2 f (n-1) (f x)
 --     ==> Avvt
 
 while :: (a->Bool) -> (a->a) -> a -> a
-while check update value = todo
+while check update value = if check value then while check update (update value) else value
 
 ------------------------------------------------------------------------------
 -- Ex 8: another version of a while loop. This time, the check
@@ -160,7 +171,9 @@ while check update value = todo
 --   whileRight (step 1000) 3  ==> 1536
 
 whileRight :: (a -> Either b a) -> a -> b
-whileRight f x = todo
+whileRight f x = whileRight' f (f x)
+whileRight' f (Right x) = whileRight' f (f x)
+whileRight' f (Left x) = x
 
 -- for the whileRight examples:
 -- step k x doubles x if it's less than k
@@ -179,7 +192,9 @@ step k x = if x<k then Right (2*x) else Left x
 -- Hint! This is a great use for list comprehensions
 
 joinToLength :: Int -> [String] -> [String]
-joinToLength = todo
+joinToLength len x = filter (checkLen len) [i ++ j | i <- x, j <- x]
+checkLen :: Int -> String -> Bool
+checkLen len list = len == length list
 
 ------------------------------------------------------------------------------
 -- Ex 10: implement the operator +|+ that returns a list with the first
@@ -193,6 +208,10 @@ joinToLength = todo
 --   [] +|+ [True]        ==> [True]
 --   [] +|+ []            ==> []
 
+(+|+) :: [a] -> [a] -> [a]
+(+|+) [] b = [head b]
+(+|+) a [] = [head a]
+(+|+) a b =  head a : [head b]
 
 ------------------------------------------------------------------------------
 -- Ex 11: remember the lectureParticipants example from Lecture 2? We
@@ -209,7 +228,7 @@ joinToLength = todo
 --   sumRights [Left "bad!", Left "missing"]         ==>  0
 
 sumRights :: [Either a Int] -> Int
-sumRights = todo
+sumRights x = sum (rights x)
 
 ------------------------------------------------------------------------------
 -- Ex 12: recall the binary function composition operation
@@ -225,7 +244,8 @@ sumRights = todo
 --   multiCompose [(3*), (2^), (+1)] 0 ==> 6
 --   multiCompose [(+1), (2^), (3*)] 0 ==> 2
 
-multiCompose fs = todo
+multiCompose [] x = x
+multiCompose fs x = multiCompose (init fs) ((last fs) x)
 
 ------------------------------------------------------------------------------
 -- Ex 13: let's consider another way to compose multiple functions. Given
@@ -244,7 +264,7 @@ multiCompose fs = todo
 --   multiApp reverse [tail, take 2, reverse] "foo" ==> ["oof","fo","oo"]
 --   multiApp concat [take 3, reverse] "race" ==> "racecar"
 
-multiApp = todo
+multiApp f fs x = f (map ($x) fs)
 
 ------------------------------------------------------------------------------
 -- Ex 14: in this exercise you get to implement an interpreter for a
@@ -279,4 +299,12 @@ multiApp = todo
 -- function, the surprise won't work.
 
 interpreter :: [String] -> [String]
-interpreter commands = todo
+interpreter commands = interpreter' 0 0 commands
+    where interpreter' x y [] = []
+          interpreter' x y (fc:commands)
+            | fc == "up" = interpreter' x (y+1) commands 
+            | fc == "down" = interpreter' x (y-1) commands 
+            | fc == "right" = interpreter' (x+1) y commands
+            | fc == "left" = interpreter' (x-1) y commands 
+            | fc == "printX" = show x : interpreter' x y commands
+            | fc == "printY" = show y : interpreter' x y commands 
